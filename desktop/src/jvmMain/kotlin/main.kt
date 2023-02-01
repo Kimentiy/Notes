@@ -6,11 +6,9 @@ import by.kimentiy.notes.EditSubtaskDialog
 import by.kimentiy.notes.SqlDelightDriverFactory
 import by.kimentiy.notes.SqlDelightNotesRepository
 import by.kimentiy.notes.models.*
+import by.kimentiy.notes.repositories.ChecklistItem
 import by.kimentiy.notes.repositories.NotesRepository
-import by.kimentiy.notes.ui.EditInboxItemScreen
-import by.kimentiy.notes.ui.EditNoteScreen
-import by.kimentiy.notes.ui.InboxScreen
-import by.kimentiy.notes.ui.Screens
+import by.kimentiy.notes.ui.*
 import by.kimentiy.notes.ui.main.MainScreen
 import by.kimentiy.notes.ui.theme.NotesTheme
 import kotlinx.coroutines.GlobalScope
@@ -34,7 +32,7 @@ fun main() = application {
                 checklistsViewModel = checklistsViewModel,
                 notesViewModel = notesViewModel,
                 repository = notesRepository,
-                state = currentScreen
+                screenState = currentScreen
             )
 
             when (val screen = currentScreen.value) {
@@ -59,14 +57,32 @@ fun main() = application {
                     )
                 }
                 Screens.AddPurchase -> {
-                    val text = remember { mutableStateOf("") }
+                    val viewModel = remember {
+                        mutableStateOf<ChecklistViewModel?>(null)
+                    }
+                    if (viewModel.value != null) {
+                        val model = ChecklistItemViewModel(
+                            item = ChecklistItem(
+                                title = "",
+                                isChecked = false
+                            )
+                        )
+                        AddPurchaseDialog(
+                            model = model,
+                            onDismiss = {
+                                currentScreen.value = Screens.Main
+                            },
+                            onAcceptClicked = {
+                                viewModel.value?.addItem(model.title.value)
+                                viewModel.value?.saveChanges()
 
-                    AddPurchaseDialog(
-                        text = text,
-                        navigateUp = {
-                            currentScreen.value = Screens.Main
-                        }
-                    )
+                                currentScreen.value = Screens.Main
+                            }
+                        )
+                    }
+                    LaunchedEffect(null) {
+                        viewModel.value = checklistsViewModel.getBuylist()
+                    }
                 }
                 Screens.Inbox -> {
                     InboxScreen(
@@ -118,7 +134,35 @@ fun main() = application {
                     }
                 }
                 Screens.EditChecklist -> {
+                    var viewModel by remember {
+                        mutableStateOf<ChecklistViewModel?>(null)
+                    }
+                    val handleBackPressed: () -> Unit = {
+                        viewModel?.saveChanges()
+                        currentScreen.value = Screens.Main
+                    }
+                    if (viewModel != null) {
+                        EditChecklistScreen(
+                            checklistViewModel = viewModel!!,
+                            addPurchaseDialog = { model, closeDialog ->
+                                AddPurchaseDialog(
+                                    model = model,
+                                    onDismiss = {
+                                        model.resetTitle()
+                                        closeDialog()
+                                    },
+                                    onAcceptClicked = {
+                                        closeDialog()
+                                    }
+                                )
+                            },
+                            onBackPressed = handleBackPressed
+                        )
+                    }
 
+                    LaunchedEffect(null) {
+                        viewModel = checklistsViewModel.getBuylist()
+                    }
                 }
             }
         }
@@ -131,7 +175,7 @@ fun MainScreen(
     checklistsViewModel: ChecklistsViewModel,
     notesViewModel: NotesViewModel,
     repository: NotesRepository,
-    state: MutableState<Screens>
+    screenState: MutableState<Screens>
 ) {
     MainScreen(
         inboxViewModel = inboxViewModel,
@@ -141,23 +185,23 @@ fun MainScreen(
         onRefreshClicked = {
 
         },
+        onAddInboxClicked = {
+            screenState.value = Screens.EditInbox(id = null)
+        },
         onInboxClicked = {
-
+            screenState.value = Screens.Inbox
+        },
+        navigateToAddPurchaseScreen = {
+            screenState.value = Screens.AddPurchase
         },
         onChecklistClicked = {
-
+            screenState.value = Screens.EditChecklist
         },
         onSearchClicked = {
 
         },
         navigateToEditScreen = {
-            state.value = Screens.EditNote(it)
+            screenState.value = Screens.EditNote(it)
         },
-        navigateToAddPurchaseScreen = {
-            state.value = Screens.AddPurchase
-        },
-        onAddInboxClicked = {
-            state.value = Screens.EditInbox(id = null)
-        }
     )
 }
