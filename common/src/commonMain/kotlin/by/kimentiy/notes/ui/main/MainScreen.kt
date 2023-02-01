@@ -12,7 +12,12 @@ import androidx.compose.material.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import by.kimentiy.notes.*
+import by.kimentiy.notes.models.ChecklistViewModel
+import by.kimentiy.notes.models.ChecklistsViewModel
+import by.kimentiy.notes.models.InboxViewModel
+import by.kimentiy.notes.models.NotesViewModel
+import by.kimentiy.notes.repositories.Id
+import by.kimentiy.notes.repositories.NotesRepository
 import kotlinx.coroutines.launch
 
 @Composable
@@ -21,6 +26,7 @@ fun MainScreen(
     checklistsViewModel: ChecklistsViewModel,
     notesViewModel: NotesViewModel,
     repository: NotesRepository,
+    onRefreshClicked: () -> Unit,
     onInboxClicked: (InboxViewModel) -> Unit,
     onChecklistClicked: (ChecklistViewModel) -> Unit,
     onSearchClicked: () -> Unit,
@@ -43,7 +49,9 @@ fun MainScreen(
                     }
                 )
             } else {
-                NotesTopBar()
+                NotesTopBar(
+                    onRefreshClicked = onRefreshClicked
+                )
             }
         },
         bottomBar = {

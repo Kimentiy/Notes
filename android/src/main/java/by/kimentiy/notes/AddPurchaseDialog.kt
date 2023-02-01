@@ -4,6 +4,7 @@ import androidx.compose.material.AlertDialog
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import by.kimentiy.notes.models.ChecklistItemViewModel
 import by.kimentiy.notes.ui.AddPurchaseDialogContent
 
 @Composable

@@ -1,4 +1,4 @@
-package by.kimentiy.notes
+package by.kimentiy.notes.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase

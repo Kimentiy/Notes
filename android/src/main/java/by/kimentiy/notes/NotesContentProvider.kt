@@ -6,6 +6,8 @@ import android.database.Cursor
 import android.net.Uri
 import android.util.Log
 import androidx.room.Room
+import by.kimentiy.notes.database.NotesDatabase
+import by.kimentiy.notes.repositories.NotesRepository
 import kotlinx.coroutines.runBlocking
 
 class NotesContentProvider : ContentProvider() {

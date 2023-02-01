@@ -1,5 +1,6 @@
 package by.kimentiy.notes
 
+import by.kimentiy.notes.repositories.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,11 +30,15 @@ class StubNotesRepository : NotesRepository {
     }
 
     override suspend fun createNote(title: String, description: String): Note {
-        TODO("Not yet implemented")
+        return Note(
+            id = Id(1),
+            title= "Title",
+            description = "Description"
+        )
     }
 
     override suspend fun updateNote(newValue: Note) {
-        TODO("Not yet implemented")
+
     }
 
     override suspend fun getBuylist(): Checklist {
@@ -63,7 +68,7 @@ class StubNotesRepository : NotesRepository {
     }
 
     override suspend fun updateChecklist(newValue: Checklist) {
-        TODO("Not yet implemented")
+
     }
 
     override suspend fun createInboxTask(
@@ -85,7 +90,7 @@ class StubNotesRepository : NotesRepository {
     }
 
     override suspend fun updateInboxTask(newValue: InboxTask) {
-        TODO("Not yet implemented")
+
     }
 
     override suspend fun deleteById(id: Id) {

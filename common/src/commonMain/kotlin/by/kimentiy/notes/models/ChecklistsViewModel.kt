@@ -1,5 +1,6 @@
-package by.kimentiy.notes
+package by.kimentiy.notes.models
 
+import by.kimentiy.notes.repositories.NotesRepository
 import kotlinx.coroutines.CoroutineScope
 
 class ChecklistsViewModel(

@@ -1,6 +1,6 @@
 package by.kimentiy.notes.ui
 
-import by.kimentiy.notes.Id
+import by.kimentiy.notes.repositories.Id
 
 sealed class Screens {
 

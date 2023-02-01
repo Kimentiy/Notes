@@ -1,9 +1,11 @@
-package by.kimentiy.notes
+package by.kimentiy.notes.models
 
+import by.kimentiy.notes.repositories.Id
+import by.kimentiy.notes.repositories.InboxTask
+import by.kimentiy.notes.repositories.NotesRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 class InboxViewModel(

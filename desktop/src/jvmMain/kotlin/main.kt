@@ -2,64 +2,105 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import by.kimentiy.notes.AddPurchaseDialog
-import by.kimentiy.notes.InboxTaskViewModel
 import by.kimentiy.notes.EditSubtaskDialog
-import by.kimentiy.notes.SubtaskViewModel
+import by.kimentiy.notes.SqlDelightDriverFactory
+import by.kimentiy.notes.SqlDelightNotesRepository
+import by.kimentiy.notes.models.*
+import by.kimentiy.notes.repositories.NotesRepository
 import by.kimentiy.notes.ui.EditInboxItemScreen
 import by.kimentiy.notes.ui.EditNoteScreen
-import by.kimentiy.notes.ui.main.MainScreen
+import by.kimentiy.notes.ui.InboxScreen
 import by.kimentiy.notes.ui.Screens
+import by.kimentiy.notes.ui.main.MainScreen
 import by.kimentiy.notes.ui.theme.NotesTheme
+import kotlinx.coroutines.GlobalScope
 
 fun main() = application {
+    val notesRepository = SqlDelightNotesRepository(
+        driverFactory = SqlDelightDriverFactory(),
+        scope = GlobalScope
+    )
+
+    val inboxViewModel = InboxViewModel(GlobalScope, notesRepository)
+    val checklistsViewModel = ChecklistsViewModel(GlobalScope, notesRepository)
+    val notesViewModel = NotesViewModel(GlobalScope, notesRepository)
+
     Window(onCloseRequest = ::exitApplication) {
         NotesTheme {
-            val currentScreen = remember { mutableStateOf(Screens.MAIN) }
+            val currentScreen = remember { mutableStateOf<Screens>(Screens.Main) }
 
-            MainScreen(currentScreen)
+            MainScreen(
+                inboxViewModel = inboxViewModel,
+                checklistsViewModel = checklistsViewModel,
+                notesViewModel = notesViewModel,
+                repository = notesRepository,
+                state = currentScreen
+            )
 
-            when (currentScreen.value) {
-                Screens.MAIN -> {
+            when (val screen = currentScreen.value) {
+                Screens.Main -> {
                     // do nothing
                 }
-                Screens.EDIT_NOTE -> {
+                is Screens.EditNote -> {
+                    val viewModel = screen.id?.let { notesViewModel.getNoteById(it) }
+                        ?: NoteViewModel(
+                            note = null,
+                            scope = GlobalScope,
+                            repository = notesRepository
+                        )
+
                     EditNoteScreen(
+                        viewModel = viewModel,
                         onBackClicked = {
-                            currentScreen.value = Screens.MAIN
+                            viewModel.saveChanges()
+
+                            currentScreen.value = Screens.Main
                         }
                     )
                 }
-                Screens.ADD_PURCHASE -> {
+                Screens.AddPurchase -> {
                     val text = remember { mutableStateOf("") }
 
                     AddPurchaseDialog(
                         text = text,
                         navigateUp = {
-                            currentScreen.value = Screens.MAIN
+                            currentScreen.value = Screens.Main
                         }
                     )
                 }
-                Screens.EDIT_INBOX -> {
-                    val viewModel = InboxTaskViewModel()
-                    var editingSubtask by remember { mutableStateOf<SubtaskViewModel?>(null) }
-
-                    EditInboxItemScreen(
-                        title = viewModel.title.collectAsState(),
-                        onTitleChanged = {
-                            viewModel.setTitle(it)
-                        },
-                        description = viewModel.description.collectAsState(),
-                        onDescriptionChanged = {
-                            viewModel.setDescription(it)
-                        },
-                        subtasks = viewModel.subtasks,
-                        onSubtaskClick = {
-                            editingSubtask = it
+                Screens.Inbox -> {
+                    InboxScreen(
+                        viewModel = inboxViewModel,
+                        navigateToTaskEditing = {
+                            currentScreen.value = Screens.EditInbox(it)
                         },
                         onBackPressed = {
-                            currentScreen.value = Screens.MAIN
+                            inboxViewModel.saveData()
+                            currentScreen.value = Screens.Main
                         }
                     )
+                }
+                is Screens.EditInbox -> {
+                    val taskId = screen.id
+                    var taskViewModel by remember {
+                        mutableStateOf<InboxTaskViewModel?>(null)
+                    }
+                    val handleBackPress: () -> Unit = {
+                        taskViewModel?.saveData()
+                        currentScreen.value = Screens.Inbox
+                    }
+
+                    var editingSubtask by remember { mutableStateOf<SubtaskViewModel?>(null) }
+
+                    if (taskViewModel != null) {
+                        EditInboxItemScreen(
+                            viewModel = taskViewModel!!,
+                            editSubtask = { model ->
+                                editingSubtask = model
+                            },
+                            onBackPressed = handleBackPress
+                        )
+                    }
 
                     editingSubtask?.let { subtask ->
                         EditSubtaskDialog(
@@ -72,6 +113,12 @@ fun main() = application {
                             }
                         )
                     }
+                    LaunchedEffect(null) {
+                        taskViewModel = inboxViewModel.getTaskById(taskId)
+                    }
+                }
+                Screens.EditChecklist -> {
+
                 }
             }
         }
@@ -79,16 +126,38 @@ fun main() = application {
 }
 
 @Composable
-fun MainScreen(state: MutableState<Screens>) {
+fun MainScreen(
+    inboxViewModel: InboxViewModel,
+    checklistsViewModel: ChecklistsViewModel,
+    notesViewModel: NotesViewModel,
+    repository: NotesRepository,
+    state: MutableState<Screens>
+) {
     MainScreen(
+        inboxViewModel = inboxViewModel,
+        checklistsViewModel = checklistsViewModel,
+        notesViewModel = notesViewModel,
+        repository = repository,
+        onRefreshClicked = {
+
+        },
+        onInboxClicked = {
+
+        },
+        onChecklistClicked = {
+
+        },
+        onSearchClicked = {
+
+        },
         navigateToEditScreen = {
-            state.value = Screens.EDIT_NOTE
+            state.value = Screens.EditNote(it)
         },
         navigateToAddPurchaseScreen = {
-            state.value = Screens.ADD_PURCHASE
+            state.value = Screens.AddPurchase
         },
         onAddInboxClicked = {
-            state.value = Screens.EDIT_INBOX
+            state.value = Screens.EditInbox(id = null)
         }
     )
 }

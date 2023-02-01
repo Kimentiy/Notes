@@ -8,8 +8,8 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
-import by.kimentiy.notes.Id
-import by.kimentiy.notes.InboxViewModel
+import by.kimentiy.notes.repositories.Id
+import by.kimentiy.notes.models.InboxViewModel
 
 @Composable
 fun InboxScreen(

@@ -4,6 +4,7 @@ plugins {
     id("com.android.library")
     kotlin("multiplatform")
     id("org.jetbrains.compose")
+    id("app.cash.sqldelight") version "2.0.0-alpha05"
 }
 
 kotlin {
@@ -18,12 +19,22 @@ kotlin {
                 api(compose.material)
                 // Needed only for preview.
                 implementation(compose.preview)
+
+                implementation("com.google.code.gson:gson:2.10")
+
+                implementation("app.cash.sqldelight:primitive-adapters:2.0.0-alpha05")
             }
         }
         named("androidMain") {
             dependencies {
                 api("androidx.appcompat:appcompat:1.4.2")
                 api("androidx.core:core-ktx:1.8.0")
+                implementation("app.cash.sqldelight:android-driver:2.0.0-alpha05")
+            }
+        }
+        named("desktopMain") {
+            dependencies {
+                implementation("app.cash.sqldelight:sqlite-driver:2.0.0-alpha05")
             }
         }
     }
@@ -46,6 +57,14 @@ android {
         named("main") {
             manifest.srcFile("src/androidMain/AndroidManifest.xml")
             res.srcDirs("src/androidMain/res")
+        }
+    }
+}
+
+sqldelight {
+    databases {
+        create("Database") {
+            packageName.set("by.kimentiy.notes")
         }
     }
 }

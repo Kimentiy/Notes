@@ -7,8 +7,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import by.kimentiy.notes.ChecklistItemViewModel
-import by.kimentiy.notes.ChecklistViewModel
+import by.kimentiy.notes.models.ChecklistItemViewModel
+import by.kimentiy.notes.models.ChecklistViewModel
 
 @Composable
 fun EditChecklistScreen(

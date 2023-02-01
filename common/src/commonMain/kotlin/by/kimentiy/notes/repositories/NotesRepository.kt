@@ -1,4 +1,4 @@
-package by.kimentiy.notes
+package by.kimentiy.notes.repositories
 
 import kotlinx.coroutines.flow.Flow
 import kotlin.jvm.JvmInline
@@ -39,11 +39,16 @@ interface NotesRepository {
 @JvmInline
 value class Id(val id: Long)
 
+interface WithGlobalId {
+
+    val id: Id
+}
+
 data class Checklist(
-    val id: Id,
+    override val id: Id,
     val name: String,
     val items: List<ChecklistItem>
-)
+) : WithGlobalId
 
 data class ChecklistItem(
     val title: String,
@@ -51,18 +56,18 @@ data class ChecklistItem(
 )
 
 data class Note(
-    val id: Id,
+    override val id: Id,
     val title: String,
     val description: String
-)
+) : WithGlobalId
 
 data class InboxTask(
-    val id: Id,
+    override val id: Id,
     val title: String,
     val description: String,
     val isCompleted: Boolean,
     val subtasks: List<Subtask>
-)
+) : WithGlobalId
 
 class Subtask(
     val title: String,

@@ -1,9 +1,11 @@
-package by.kimentiy.notes
+package by.kimentiy.notes.models
 
+import by.kimentiy.notes.repositories.Id
+import by.kimentiy.notes.repositories.Note
+import by.kimentiy.notes.repositories.NotesRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
@@ -28,6 +30,11 @@ class NotesViewModel(
 
     fun getNoteById(id: Id): NoteViewModel {
         return notes.value.find { it.id == id } ?: NoteViewModel(null, scope, repository)
+    }
+
+    // TODO delete me
+    fun forceNotesFromWeb(notes: List<Note>) {
+        _notes.value = notes.map { NoteViewModel(it, scope, repository) }
     }
 }
 

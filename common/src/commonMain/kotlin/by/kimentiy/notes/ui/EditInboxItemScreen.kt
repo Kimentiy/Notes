@@ -15,8 +15,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import by.kimentiy.notes.InboxTaskViewModel
-import by.kimentiy.notes.SubtaskViewModel
+import by.kimentiy.notes.models.InboxTaskViewModel
+import by.kimentiy.notes.models.SubtaskViewModel
 
 @Composable
 fun EditInboxItemScreen(

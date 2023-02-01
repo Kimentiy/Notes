@@ -1,5 +1,7 @@
 package by.kimentiy.notes
 
+import by.kimentiy.notes.database.*
+import by.kimentiy.notes.repositories.*
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -74,7 +76,7 @@ class RoomNotesRepository(
         noteDao.getNotes().map {
             it.map { entity ->
                 Note(
-                    id = Id(entity.id!!),
+                    id = Id(entity.id),
                     title = entity.title,
                     description = entity.description
                 )

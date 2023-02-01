@@ -1,5 +1,9 @@
-package by.kimentiy.notes
+package by.kimentiy.notes.models
 
+import by.kimentiy.notes.repositories.Checklist
+import by.kimentiy.notes.repositories.ChecklistItem
+import by.kimentiy.notes.repositories.Id
+import by.kimentiy.notes.repositories.NotesRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

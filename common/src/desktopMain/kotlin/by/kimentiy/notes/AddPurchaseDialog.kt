@@ -25,7 +25,10 @@ fun AddPurchaseDialog(
         )
     ) {
         AddPurchaseDialogContent(
-            text = text,
+            text = text.value,
+            onTextChanged = {
+                text.value = it
+            },
             onAcceptClicked = {},
             onCancelClicked = {}
         )

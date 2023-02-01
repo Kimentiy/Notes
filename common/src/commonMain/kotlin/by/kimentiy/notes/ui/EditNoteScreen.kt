@@ -14,7 +14,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import by.kimentiy.notes.NoteViewModel
+import by.kimentiy.notes.models.NoteViewModel
 
 @Composable
 fun EditNoteScreen(

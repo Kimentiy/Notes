@@ -1,0 +1,79 @@
+import kotlin.Boolean;
+
+CREATE TABLE IF NOT EXISTS noteTable(
+    id INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    PRIMARY KEY (id)
+);
+
+getAllNotes:
+SELECT *
+FROM noteTable;
+
+insertNote:
+INSERT INTO noteTable(id, title, description)
+VALUES (?, ?, ?);
+
+updateNote:
+UPDATE noteTable
+SET title=?, description=?
+WHERE id=?;
+
+deleteNote:
+DELETE FROM noteTable WHERE id=?;
+
+getMaxNoteId:
+SELECT MAX(id) FROM noteTable;
+
+CREATE TABLE IF NOT EXISTS checklistTable(
+    id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    itemsJson TEXT NOT NULL,
+    PRIMARY KEY (id)
+);
+
+getAllChecklists:
+SELECT * FROM checklistTable;
+
+insertChecklist:
+INSERT INTO checklistTable(id, name, itemsJson)
+VALUES (?, ?, ?);
+
+updateChecklist:
+UPDATE checklistTable
+SET name=?, itemsJson=?
+WHERE id=?;
+
+deleteChecklist:
+DELETE FROM checklistTable WHERE id=?;
+
+getMaxChecklistId:
+SELECT MAX(id) FROM checklistTable;
+
+CREATE TABLE IF NOT EXISTS inboxTaskTable(
+    id INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    isCompleted INTEGER AS Boolean NOT NULL,
+    subtasksJson TEXT NOT NULL,
+    PRIMARY KEY (id)
+);
+
+getAllInboxTasks:
+SELECT * FROM inboxTaskTable;
+
+insertInboxTask:
+INSERT INTO inboxTaskTable(id, title, description, isCompleted, subtasksJson)
+VALUES (?, ?, ?, ?, ?);
+
+updateInboxTask:
+UPDATE inboxTaskTable
+SET title=?, description=?, isCompleted=?, subtasksJson=?
+WHERE id=?;
+
+deleteInboxTask:
+DELETE FROM inboxTaskTable WHERE id=?;
+
+getMaxInboxTaskId:
+SELECT MAX(id) FROM inboxTaskTable;

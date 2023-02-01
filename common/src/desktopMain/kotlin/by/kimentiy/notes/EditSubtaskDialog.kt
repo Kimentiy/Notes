@@ -8,6 +8,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
+import by.kimentiy.notes.models.SubtaskViewModel
 import by.kimentiy.notes.ui.EditSubtaskDialogContent
 
 @Composable

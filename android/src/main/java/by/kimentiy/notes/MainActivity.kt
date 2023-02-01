@@ -1,9 +1,7 @@
 package by.kimentiy.notes
 
-import android.content.ContentValues
-import android.net.Uri
 import android.os.Bundle
-import android.provider.UserDictionary
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.*
@@ -14,10 +12,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
+import by.kimentiy.notes.models.ChecklistItemViewModel
+import by.kimentiy.notes.models.ChecklistViewModel
+import by.kimentiy.notes.models.InboxTaskViewModel
+import by.kimentiy.notes.models.SubtaskViewModel
+import by.kimentiy.notes.repositories.ChecklistItem
 import by.kimentiy.notes.ui.*
 import by.kimentiy.notes.ui.main.MainScreen
 import by.kimentiy.notes.ui.theme.NotesTheme
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -25,6 +27,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val repository = (application as NotesApp).repository
+        val syncRepository = (application as NotesApp).syncRepository
         val viewModelFactory = NotesViewModelFactory(repository)
 
         setContent {
@@ -46,6 +49,18 @@ class MainActivity : ComponentActivity() {
                             checklistsViewModel = checklistsViewModel,
                             notesViewModel = notesViewModel,
                             repository = repository,
+                            onRefreshClicked = {
+                                lifecycleScope.launch {
+                                    val notes = syncRepository.getNotes()
+                                    notes
+                                        .onSuccess {
+                                            notesViewModel.forceNotesFromWeb(it)
+                                        }
+                                        .onFailure {
+                                            Log.d("MyTag", it.stackTraceToString())
+                                        }
+                                }
+                            },
                             onInboxClicked = {
                                 navController.navigate(Screens.Inbox.route)
                             },
