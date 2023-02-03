@@ -17,11 +17,10 @@ import by.kimentiy.notes.models.ChecklistViewModel
 @Composable
 fun EditChecklistScreen(
     checklistViewModel: ChecklistViewModel,
-    addPurchaseDialog: @Composable (ChecklistItemViewModel, closeDialog: () -> Unit) -> Unit,
+    showAddPurchaseDialog: (ChecklistItemViewModel) -> Unit,
     onBackPressed: () -> Unit,
 ) {
     val items = checklistViewModel.items.collectAsState()
-    var editingItem by remember { mutableStateOf<ChecklistItemViewModel?>(null) }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -40,13 +39,10 @@ fun EditChecklistScreen(
                     },
                     isChecked = item.isChecked.collectAsState().value,
                     onItemClicked = {
-                        editingItem = item
+                        showAddPurchaseDialog(item)
                     }
                 )
             }
         }
-    }
-    editingItem?.let { model ->
-        addPurchaseDialog(model) { editingItem = null }
     }
 }

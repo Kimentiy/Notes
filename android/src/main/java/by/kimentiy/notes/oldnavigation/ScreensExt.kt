@@ -1,4 +1,4 @@
-package by.kimentiy.notes
+package by.kimentiy.notes.oldnavigation
 
 import android.os.Bundle
 import androidx.navigation.NamedNavArgument

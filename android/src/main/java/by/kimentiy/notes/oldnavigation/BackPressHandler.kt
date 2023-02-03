@@ -1,4 +1,4 @@
-package by.kimentiy.notes
+package by.kimentiy.notes.oldnavigation
 
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner

@@ -9,12 +9,12 @@ plugins {
 }
 
 android {
-    compileSdk = 32
+    compileSdk = 33
 
     defaultConfig {
         applicationId = "by.kimentiy.notes"
         minSdk = 24
-        targetSdk = 32
+        targetSdk = 33
         versionCode = 1
         versionName = "1.0"
 
@@ -44,6 +44,9 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.4.0")
     implementation("androidx.navigation:navigation-compose:2.4.2")
     implementation(compose.runtime)
+
+    implementation("io.github.alexgladkov:odyssey-core:1.3.1")
+    implementation("io.github.alexgladkov:odyssey-compose:1.3.1")
 
     val roomVersion = "2.4.3"
     implementation("androidx.room:room-runtime:$roomVersion")

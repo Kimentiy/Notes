@@ -1,4 +1,3 @@
-import org.jetbrains.compose.compose
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
@@ -15,6 +14,9 @@ kotlin {
             dependencies {
                 implementation(compose.desktop.currentOs)
                 implementation(project(":common"))
+
+                implementation("io.github.alexgladkov:odyssey-core:1.3.1")
+                implementation("io.github.alexgladkov:odyssey-compose:1.3.1")
             }
         }
     }

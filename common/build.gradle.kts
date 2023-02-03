@@ -23,6 +23,10 @@ kotlin {
                 implementation("com.google.code.gson:gson:2.10")
 
                 implementation("app.cash.sqldelight:primitive-adapters:2.0.0-alpha05")
+
+                // navigation
+                implementation("io.github.alexgladkov:odyssey-core:1.3.1")
+                implementation("io.github.alexgladkov:odyssey-compose:1.3.1")
             }
         }
         named("androidMain") {

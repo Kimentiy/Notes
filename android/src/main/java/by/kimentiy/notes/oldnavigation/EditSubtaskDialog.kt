@@ -1,4 +1,4 @@
-package by.kimentiy.notes
+package by.kimentiy.notes.oldnavigation
 
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Text
