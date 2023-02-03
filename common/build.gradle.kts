@@ -27,6 +27,9 @@ kotlin {
                 // navigation
                 implementation("io.github.alexgladkov:odyssey-core:1.3.1")
                 implementation("io.github.alexgladkov:odyssey-compose:1.3.1")
+
+                // network
+                implementation("io.ktor:ktor-client-core:2.2.3")
             }
         }
         named("androidMain") {
@@ -34,11 +37,15 @@ kotlin {
                 api("androidx.appcompat:appcompat:1.4.2")
                 api("androidx.core:core-ktx:1.8.0")
                 implementation("app.cash.sqldelight:android-driver:2.0.0-alpha05")
+
+                implementation("io.ktor:ktor-client-android:2.2.3")
             }
         }
         named("desktopMain") {
             dependencies {
                 implementation("app.cash.sqldelight:sqlite-driver:2.0.0-alpha05")
+
+                implementation("io.ktor:ktor-client-cio:2.2.3")
             }
         }
     }
