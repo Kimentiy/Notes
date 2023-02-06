@@ -51,7 +51,7 @@ fun RootComposeBuilder.navigationGraph(
                 rootController.push(Screens.Inbox.name)
             },
             onChecklistClicked = {
-                rootController.push(Screens.EditChecklist.name)
+                rootController.push(Screens.EditChecklist.name, it.id)
             },
             onSearchClicked = {
 
@@ -60,28 +60,23 @@ fun RootComposeBuilder.navigationGraph(
                 rootController.push(Screens.EditNote(it).name, it)
             },
             navigateToAddPurchaseScreen = {
-                val model = ChecklistItemViewModel(
-                    item = ChecklistItem(
-                        title = "",
-                        isChecked = false
-                    )
-                )
+                val buylist = checklistsViewModel.getChecklistById(Id(1))
                 val alertConfiguration =
                     AlertConfiguration(maxWidth = 0.8f, cornerRadius = 4)
                 modalController.present(alertConfiguration) { dialogKey ->
+                    val title = remember { mutableStateOf("") }
+
                     AddPurchaseDialogContent(
-                        text = model.title.collectAsState().value,
+                        text = title.value,
                         onTextChanged = {
-                            model.setTitle(it)
+                            title.value = it
                         },
                         onCancelClicked = {
-                            model.resetTitle()
                             modalController.popBackStack(dialogKey)
                         },
                         onAcceptClicked = {
-                            GlobalScope.launch(Dispatchers.IO) {
-                                checklistsViewModel.getBuylist().addItem(model.title.value)
-                            }
+                            buylist.addItem(title.value)
+                            buylist.saveChanges()
                             modalController.popBackStack(dialogKey)
                         }
                     )
@@ -168,42 +163,14 @@ fun RootComposeBuilder.navigationGraph(
     }
     screen(Screens.EditChecklist.name) {
         val rootController = LocalRootController.current
-        val modalController = rootController.findModalController()
 
-        var viewModel by remember {
-            mutableStateOf<ChecklistViewModel?>(null)
-        }
-        if (viewModel != null) {
-            EditChecklistScreen(
-                checklistViewModel = viewModel!!,
-                showAddPurchaseDialog = { model ->
-                    val alertConfiguration =
-                        AlertConfiguration(maxWidth = 0.8f, cornerRadius = 4)
-                    modalController.present(alertConfiguration) { dialogKey ->
-                        AddPurchaseDialogContent(
-                            text = model.title.collectAsState().value,
-                            onTextChanged = {
-                                model.setTitle(it)
-                            },
-                            onCancelClicked = {
-                                model.resetTitle()
-                                modalController.popBackStack(dialogKey)
-                            },
-                            onAcceptClicked = {
-                                modalController.popBackStack(dialogKey)
-                            }
-                        )
-                    }
-                },
-                onBackPressed = {
-                    viewModel?.saveChanges()
-                    rootController.popBackStack()
-                }
-            )
-        }
-
-        LaunchedEffect(null) {
-            viewModel = checklistsViewModel.getBuylist()
-        }
+        val checklist = checklistsViewModel.getChecklistById(it as Id)
+        EditChecklistScreen(
+            checklistViewModel = checklist,
+            onBackPressed = {
+                checklist.saveChanges()
+                rootController.popBackStack()
+            }
+        )
     }
 }

@@ -29,12 +29,18 @@ android {
     }
 
     compileOptions {
+        // enables java.time (used by kotlinx-datetime) in android versions prior 26
+        isCoreLibraryDesugaringEnabled = true
+
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
 }
 
 dependencies {
+    // enables java.time (used by kotlinx-datetime) in android versions prior 26
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.2.2")
+
     implementation(project(":common"))
     implementation("androidx.core:core-ktx:1.8.0")
     implementation("androidx.compose.ui:ui:1.1.1")

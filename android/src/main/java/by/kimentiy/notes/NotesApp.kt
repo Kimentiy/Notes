@@ -6,6 +6,7 @@ import androidx.room.Room
 import by.kimentiy.notes.database.NotesDatabase
 import by.kimentiy.notes.repositories.NotesRepository
 import by.kimentiy.notes.repositories.SyncRepository
+import kotlinx.coroutines.GlobalScope
 
 class NotesApp : Application() {
 
@@ -20,10 +21,9 @@ class NotesApp : Application() {
             NotesDatabase::class.java,
             "notes-database"
         ).build()
-        repository = RoomNotesRepository(
-            inboxTaskDao = database.inboxTaskDao(),
-            noteDao = database.noteDao(),
-            checklistDao = database.checklistDao()
+        repository = SqlDelightNotesRepository(
+            driverFactory = SqlDelightDriverFactory(this),
+            scope = GlobalScope
         )
         syncRepository = SyncHttpRepository()
     }

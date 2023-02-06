@@ -9,13 +9,7 @@ import kotlinx.coroutines.withContext
 
 interface SyncRepository {
 
-    suspend fun createNote(note: Note)
 
-    suspend fun updateNote(note: Note)
-
-    suspend fun getNotes(): Result<List<Note>>
-
-    suspend fun deleteNote()
 }
 
 suspend fun makeSomeRequest(): String = withContext(Dispatchers.IO) {

@@ -4,6 +4,8 @@ CREATE TABLE IF NOT EXISTS noteTable(
     id INTEGER NOT NULL,
     title TEXT NOT NULL,
     description TEXT NOT NULL,
+    scn INTEGER NOT NULL,
+    lastModifiedTimestamp INTEGER  NOT NULL,
     PRIMARY KEY (id)
 );
 
@@ -12,8 +14,8 @@ SELECT *
 FROM noteTable;
 
 insertNote:
-INSERT INTO noteTable(id, title, description)
-VALUES (?, ?, ?);
+INSERT INTO noteTable(id, title, description, scn, lastModifiedTimestamp)
+VALUES (?, ?, ?, ?, ?);
 
 updateNote:
 UPDATE noteTable
@@ -30,6 +32,8 @@ CREATE TABLE IF NOT EXISTS checklistTable(
     id INTEGER NOT NULL,
     name TEXT NOT NULL,
     itemsJson TEXT NOT NULL,
+    scn INTEGER NOT NULL,
+    lastModifiedTimestamp INTEGER  NOT NULL,
     PRIMARY KEY (id)
 );
 
@@ -37,8 +41,8 @@ getAllChecklists:
 SELECT * FROM checklistTable;
 
 insertChecklist:
-INSERT INTO checklistTable(id, name, itemsJson)
-VALUES (?, ?, ?);
+INSERT INTO checklistTable(id, name, itemsJson, scn, lastModifiedTimestamp)
+VALUES (?, ?, ?, ?, ?);
 
 updateChecklist:
 UPDATE checklistTable
@@ -57,6 +61,8 @@ CREATE TABLE IF NOT EXISTS inboxTaskTable(
     description TEXT NOT NULL,
     isCompleted INTEGER AS Boolean NOT NULL,
     subtasksJson TEXT NOT NULL,
+    scn INTEGER NOT NULL,
+    lastModifiedTimestamp INTEGER  NOT NULL,
     PRIMARY KEY (id)
 );
 
@@ -64,8 +70,8 @@ getAllInboxTasks:
 SELECT * FROM inboxTaskTable;
 
 insertInboxTask:
-INSERT INTO inboxTaskTable(id, title, description, isCompleted, subtasksJson)
-VALUES (?, ?, ?, ?, ?);
+INSERT INTO inboxTaskTable(id, title, description, isCompleted, subtasksJson, scn, lastModifiedTimestamp)
+VALUES (?, ?, ?, ?, ?, ?, ?);
 
 updateInboxTask:
 UPDATE inboxTaskTable

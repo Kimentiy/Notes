@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.room.Room
 import by.kimentiy.notes.database.NotesDatabase
 import by.kimentiy.notes.repositories.NotesRepository
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.runBlocking
 
 class NotesContentProvider : ContentProvider() {
@@ -21,12 +22,10 @@ class NotesContentProvider : ContentProvider() {
             NotesDatabase::class.java,
             "notes-database"
         ).build()
-        repository = RoomNotesRepository(
-            inboxTaskDao = database.inboxTaskDao(),
-            noteDao = database.noteDao(),
-            checklistDao = database.checklistDao()
+        repository = SqlDelightNotesRepository(
+            driverFactory = SqlDelightDriverFactory(context!!),
+            scope = GlobalScope
         )
-
         return true
     }
 

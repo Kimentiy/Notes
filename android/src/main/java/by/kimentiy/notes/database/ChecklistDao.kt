@@ -19,9 +19,6 @@ interface ChecklistDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun addChecklist(checklist: ChecklistEntity): Long
 
-    @Query("SELECT * FROM ChecklistEntity WHERE id=1")
-    fun getBuylist(): ChecklistEntity?
-
     @Query("SELECT * FROM ChecklistEntity")
     fun getChecklists(): Flow<List<ChecklistEntity>>
 

@@ -105,7 +105,7 @@ fun NotesGrid(
     onNoteClicked: (Id) -> Unit
 ) {
     val notes = notesViewModel.notes.collectAsState().value
-    val buylist = remember { mutableStateOf<ChecklistViewModel?>(null) }
+    val checklists = checklistsViewModel.checklists.collectAsState().value
 
     LazyVerticalGrid(
         columns = GridCells.Adaptive(128.dp),
@@ -135,23 +135,22 @@ fun NotesGrid(
             )
         }
 
-        if (buylist.value != null) {
-            item {
-                val buylistId = buylist.value!!.id
-                val content =
-                    buylist.value!!.items.collectAsState().value.joinToString(separator = "\n") {
-                        it.title.value
-                    }
+        items(items = checklists) { checklist ->
+            val checklistId = checklist.id
+            val content =
+                checklist.items.collectAsState().value.joinToString(separator = "\n") {
+                    it.title.value
+                }
 
-                Note(
-                    title = buylist.value!!.name.collectAsState().value,
-                    content = content,
-                    isSelected = buylistId in selectedNotes.value,
-                    onClick = {
-                        if (selectedNotes.value.isEmpty()) {
-                            onChecklistClicked(buylist.value!!)
-                        }
-                        // General delete logic for usual checklist
+            Note(
+                title = checklist.name.collectAsState().value,
+                content = content,
+                isSelected = checklistId in selectedNotes.value,
+                onClick = {
+                    if (selectedNotes.value.isEmpty()) {
+                        onChecklistClicked(checklist)
+                    }
+                    // General delete logic for usual checklist
 //                        if (selectedNotes.value.isEmpty()) {
 //                            onChecklistClicked(buylist.value!!)
 //                        } else if (selectedNotes.value.contains(buylistId)) {
@@ -159,13 +158,12 @@ fun NotesGrid(
 //                        } else {
 //                            selectedNotes.value = selectedNotes.value + listOf(buylistId)
 //                        }
-                    },
-                    onLongClick = {
-                        // Buylist can't be deleted
-                        // selectedNotes.value = selectedNotes.value + listOf(buylistId)
-                    }
-                )
-            }
+                },
+                onLongClick = {
+                    // Buylist can't be deleted
+                    // selectedNotes.value = selectedNotes.value + listOf(buylistId)
+                }
+            )
         }
 
         items(items = notes) { note ->
@@ -187,8 +185,5 @@ fun NotesGrid(
                 }
             )
         }
-    }
-    LaunchedEffect(null) {
-        buylist.value = checklistsViewModel.getBuylist()
     }
 }

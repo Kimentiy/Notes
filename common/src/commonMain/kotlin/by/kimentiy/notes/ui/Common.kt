@@ -4,12 +4,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Checkbox
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,5 +46,38 @@ fun CheckboxWithTitle(
         Text(
             title
         )
+    }
+}
+
+@Composable
+fun CheckboxWithEditableTitle(
+    title: String,
+    onTitleChanged: (String) -> Unit,
+    isChecked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    onDeleteClicked: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Checkbox(
+            checked = isChecked,
+            onCheckedChange = onCheckedChange
+        )
+        TextField(
+            value = title,
+            onValueChange = onTitleChanged,
+            modifier = Modifier.weight(1f),
+        )
+        IconButton(
+            onClick = {
+                onDeleteClicked()
+            }
+        ) {
+            Icon(Icons.Default.Delete, null)
+        }
     }
 }

@@ -10,17 +10,17 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class ChecklistViewModel(
-    private val checklist: Checklist,
+    private val checklist: Checklist?,
     private val scope: CoroutineScope,
     private val repository: NotesRepository
 ) {
 
-    val id: Id = checklist.id
+    val id: Id? = checklist?.id
 
-    private val _name = MutableStateFlow(checklist.name)
+    private val _name = MutableStateFlow(checklist?.name.orEmpty())
     val name: StateFlow<String> = _name
 
-    private val _items = MutableStateFlow(checklist.items.map(::ChecklistItemViewModel))
+    private val _items = MutableStateFlow(checklist?.items?.map(::ChecklistItemViewModel).orEmpty())
     val items: StateFlow<List<ChecklistItemViewModel>> = _items
 
     fun setName(name: String) {
@@ -31,18 +31,33 @@ class ChecklistViewModel(
         _items.value = items.value + ChecklistItemViewModel(ChecklistItem(title, isChecked = false))
     }
 
+    fun removeItem(item: ChecklistItemViewModel) {
+        _items.value = items.value.filterNot { it === item }
+    }
+
     fun saveChanges() {
         scope.launch {
-            repository.updateChecklist(
-                checklist.copy(
+            if (checklist == null) {
+                repository.createChecklist(
                     name = name.value,
-                    items = items.value.map {
-                        ChecklistItem(
-                            title = it.title.value,
-                            isChecked = it.isChecked.value
-                        )
-                    }
+                    items = items.value.toChecklistItems()
                 )
+            } else {
+                repository.updateChecklist(
+                    checklist.copy(
+                        name = name.value,
+                        items = items.value.toChecklistItems()
+                    )
+                )
+            }
+        }
+    }
+
+    private fun List<ChecklistItemViewModel>.toChecklistItems(): List<ChecklistItem> {
+        return map {
+            ChecklistItem(
+                title = it.title.value,
+                isChecked = it.isChecked.value
             )
         }
     }

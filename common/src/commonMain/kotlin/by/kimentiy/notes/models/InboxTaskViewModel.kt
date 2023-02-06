@@ -67,13 +67,7 @@ class InboxTaskViewModel(
                 repository.createInboxTask(
                     title = title.value,
                     description = description.value,
-                    subtasks = subtasks.value.map { subtaskModel ->
-                        Subtask(
-                            title = subtaskModel.title.value,
-                            description = subtaskModel.description.value,
-                            isCompleted = subtaskModel.isCompleted.value
-                        )
-                    }
+                    subtasks = subtasks.value.mapToSubtasks()
                 )
             }
         } else {
@@ -83,16 +77,20 @@ class InboxTaskViewModel(
                         title = title.value,
                         description = description.value,
                         isCompleted = isCompleted.value,
-                        subtasks = subtasks.value.map { subtaskModel ->
-                            Subtask(
-                                title = subtaskModel.title.value,
-                                description = subtaskModel.description.value,
-                                isCompleted = subtaskModel.isCompleted.value
-                            )
-                        }
+                        subtasks = subtasks.value.mapToSubtasks()
                     )
                 )
             }
+        }
+    }
+
+    private fun List<SubtaskViewModel>.mapToSubtasks(): List<Subtask> {
+        return map {
+            Subtask(
+                title = it.title.value,
+                description = it.description.value,
+                isCompleted = it.isCompleted.value
+            )
         }
     }
 

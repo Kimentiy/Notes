@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 
 class SqlDelightNotesRepository(
     driverFactory: SqlDelightDriverFactory,
@@ -30,12 +32,16 @@ class SqlDelightNotesRepository(
                 val freshBuylist = Checklist(
                     id = Id(1),
                     name = "Buylist",
-                    items = emptyList()
+                    items = emptyList(),
+                    scn = 0,
+                    lastModified = Clock.System.now()
                 )
                 database.databaseQueries.insertChecklist(
                     id = freshBuylist.id.id,
                     name = freshBuylist.name,
-                    itemsJson = ""
+                    itemsJson = "",
+                    scn = freshBuylist.scn,
+                    lastModifiedTimestamp = freshBuylist.lastModified.toDbTime()
                 )
 
                 checklists.value = listOf(freshBuylist)
@@ -45,7 +51,9 @@ class SqlDelightNotesRepository(
                         id = Id(buylist.id),
                         name = buylist.name,
                         items = gson.fromJson(buylist.itemsJson, Array<ChecklistItem>::class.java)
-                            ?.toList().orEmpty()
+                            ?.toList().orEmpty(),
+                        scn = buylist.scn,
+                        lastModified = Instant.fromEpochMilliseconds(buylist.lastModifiedTimestamp)
                     )
                 )
             }
@@ -54,7 +62,9 @@ class SqlDelightNotesRepository(
                 Note(
                     id = Id(it.id),
                     title = it.title,
-                    description = it.description
+                    description = it.description,
+                    scn = it.scn,
+                    lastModified = Instant.fromEpochMilliseconds(it.lastModifiedTimestamp)
                 )
             }
 
@@ -65,7 +75,9 @@ class SqlDelightNotesRepository(
                     description = it.description,
                     isCompleted = it.isCompleted,
                     subtasks = gson.fromJson(it.subtasksJson, Array<Subtask>::class.java)?.toList()
-                        .orEmpty()
+                        .orEmpty(),
+                    scn = it.scn,
+                    lastModified = it.lastModifiedTimestamp.toDomainTime()
                 )
             }
         }
@@ -96,7 +108,9 @@ class SqlDelightNotesRepository(
             title = title,
             description = description,
             isCompleted = false,
-            subtasks = subtasks
+            subtasks = subtasks,
+            scn = 0,
+            lastModified = Clock.System.now()
         )
 
         database.databaseQueries.insertInboxTask(
@@ -104,7 +118,9 @@ class SqlDelightNotesRepository(
             title = title,
             description = description,
             isCompleted = inboxTask.isCompleted,
-            subtasksJson = gson.toJson(subtasks)
+            subtasksJson = gson.toJson(subtasks),
+            scn = inboxTask.scn,
+            lastModifiedTimestamp = inboxTask.lastModified.toDbTime()
         )
 
         _inboxTasks.addValue(inboxTask)
@@ -121,12 +137,16 @@ class SqlDelightNotesRepository(
             val note = Note(
                 id = Id(getNewGlobalId()),
                 title = title,
-                description = description
+                description = description,
+                scn = 0,
+                lastModified = Clock.System.now()
             )
             database.databaseQueries.insertNote(
                 id = note.id.id,
                 title = title,
-                description = description
+                description = description,
+                scn = note.scn,
+                lastModifiedTimestamp = note.lastModified.toDbTime()
             )
 
             notes.addValue(note)
@@ -144,10 +164,6 @@ class SqlDelightNotesRepository(
         notes.updateValue(newValue)
     }
 
-    override suspend fun getBuylist(): Checklist {
-        return checklists.value.first()
-    }
-
     override fun getChecklists(): Flow<List<Checklist>> {
         return checklists
     }
@@ -161,6 +177,29 @@ class SqlDelightNotesRepository(
 
         checklists.updateValue(newValue)
     }
+
+    override suspend fun createChecklist(name: String, items: List<ChecklistItem>): Checklist =
+        withContext(Dispatchers.IO) {
+            val checklist = Checklist(
+                id = Id(getNewGlobalId()),
+                name = name,
+                items = items,
+                scn = 0,
+                lastModified = Clock.System.now()
+            )
+
+            database.databaseQueries.insertChecklist(
+                id = checklist.id.id,
+                name = checklist.name,
+                itemsJson = gson.toJson(checklist.items),
+                scn = checklist.scn,
+                lastModifiedTimestamp = checklist.lastModified.toDbTime()
+            )
+
+            checklists.addValue(checklist)
+
+            checklist
+        }
 
     override suspend fun deleteById(id: Id) = withContext(Dispatchers.IO) {
         database.databaseQueries.deleteNote(id.id)
@@ -192,5 +231,13 @@ class SqlDelightNotesRepository(
 
     private fun <T : WithGlobalId> MutableStateFlow<List<T>>.removeValue(id: Id) {
         value = value.filterNot { it.id == id }
+    }
+
+    private fun Instant.toDbTime(): Long {
+        return toEpochMilliseconds()
+    }
+
+    private fun Long.toDomainTime(): Instant {
+        return Instant.fromEpochMilliseconds(this)
     }
 }

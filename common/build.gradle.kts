@@ -30,6 +30,9 @@ kotlin {
 
                 // network
                 implementation("io.ktor:ktor-client-core:2.2.3")
+
+                // datetime
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
             }
         }
         named("androidMain") {
@@ -52,11 +55,11 @@ kotlin {
 }
 
 android {
-    compileSdk = 32
+    compileSdk = 33
 
     defaultConfig {
         minSdk = 21
-        targetSdk = 32
+        targetSdk = 33
     }
 
     compileOptions {

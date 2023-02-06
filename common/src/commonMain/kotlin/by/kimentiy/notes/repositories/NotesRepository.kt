@@ -1,6 +1,7 @@
 package by.kimentiy.notes.repositories
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.datetime.Instant
 import kotlin.jvm.JvmInline
 
 interface NotesRepository {
@@ -26,11 +27,11 @@ interface NotesRepository {
     suspend fun updateNote(newValue: Note)
 
 
-    suspend fun getBuylist(): Checklist
-
     fun getChecklists(): Flow<List<Checklist>>
 
     suspend fun updateChecklist(newValue: Checklist)
+
+    suspend fun createChecklist(name: String, items: List<ChecklistItem>): Checklist
 
 
     suspend fun deleteById(id: Id)
@@ -47,7 +48,9 @@ interface WithGlobalId {
 data class Checklist(
     override val id: Id,
     val name: String,
-    val items: List<ChecklistItem>
+    val items: List<ChecklistItem>,
+    val scn: Long,
+    val lastModified: Instant
 ) : WithGlobalId
 
 data class ChecklistItem(
@@ -58,7 +61,9 @@ data class ChecklistItem(
 data class Note(
     override val id: Id,
     val title: String,
-    val description: String
+    val description: String,
+    val scn: Long,
+    val lastModified: Instant
 ) : WithGlobalId
 
 data class InboxTask(
@@ -66,7 +71,9 @@ data class InboxTask(
     val title: String,
     val description: String,
     val isCompleted: Boolean,
-    val subtasks: List<Subtask>
+    val subtasks: List<Subtask>,
+    val scn: Long,
+    val lastModified: Instant
 ) : WithGlobalId
 
 class Subtask(

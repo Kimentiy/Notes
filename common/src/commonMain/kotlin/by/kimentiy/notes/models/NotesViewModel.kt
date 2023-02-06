@@ -31,11 +31,6 @@ class NotesViewModel(
     fun getNoteById(id: Id): NoteViewModel {
         return notes.value.find { it.id == id } ?: NoteViewModel(null, scope, repository)
     }
-
-    // TODO delete me
-    fun forceNotesFromWeb(notes: List<Note>) {
-        _notes.value = notes.map { NoteViewModel(it, scope, repository) }
-    }
 }
 
 class NoteViewModel(
