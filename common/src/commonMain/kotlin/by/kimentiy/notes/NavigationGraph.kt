@@ -3,10 +3,7 @@ package by.kimentiy.notes
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import by.kimentiy.notes.models.*
-import by.kimentiy.notes.repositories.ChecklistItem
-import by.kimentiy.notes.repositories.Id
-import by.kimentiy.notes.repositories.NotesRepository
-import by.kimentiy.notes.repositories.makeSomeRequest
+import by.kimentiy.notes.repositories.*
 import by.kimentiy.notes.ui.*
 import by.kimentiy.notes.ui.main.MainScreen
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +22,7 @@ fun RootComposeBuilder.navigationGraph(
     checklistsViewModel: ChecklistsViewModel,
     notesViewModel: NotesViewModel,
     repository: NotesRepository,
+    syncRepository: SyncRepository
 ) {
     screen(Screens.Main.name) {
         val rootController = LocalRootController.current
@@ -37,14 +35,9 @@ fun RootComposeBuilder.navigationGraph(
             repository = repository,
             onRefreshClicked = {
                 GlobalScope.launch {
-                    val result = makeSomeRequest()
+                    val result = syncRepository.syncNotes()
 
-                    val alertConfiguration =
-                        AlertConfiguration(maxWidth = 0.8f, cornerRadius = 4)
-                    modalController.present(alertConfiguration) { dialogKey ->
-
-                        Text(result)
-                    }
+                    notesViewModel.forceNotesFromServer(result)
                 }
             },
             onInboxClicked = {

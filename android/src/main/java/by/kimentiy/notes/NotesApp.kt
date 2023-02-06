@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.room.Room
 import by.kimentiy.notes.database.NotesDatabase
 import by.kimentiy.notes.repositories.NotesRepository
+import by.kimentiy.notes.repositories.SyncMichRepository
 import by.kimentiy.notes.repositories.SyncRepository
 import kotlinx.coroutines.GlobalScope
 
@@ -25,7 +26,7 @@ class NotesApp : Application() {
             driverFactory = SqlDelightDriverFactory(this),
             scope = GlobalScope
         )
-        syncRepository = SyncHttpRepository()
+        syncRepository = SyncMichRepository()
     }
 
     override fun attachBaseContext(base: Context?) {

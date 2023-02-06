@@ -31,7 +31,8 @@ class MainActivity : ComponentActivity() {
                     inboxViewModel = inboxViewModel,
                     checklistsViewModel = checklistsViewModel,
                     notesViewModel = notesViewModel,
-                    repository = repository
+                    repository = repository,
+                    syncRepository = syncRepository
                 )
             }
         }

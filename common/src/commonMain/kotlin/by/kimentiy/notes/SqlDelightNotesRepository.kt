@@ -6,7 +6,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
@@ -27,34 +26,14 @@ class SqlDelightNotesRepository(
 
     init {
         scope.launch(Dispatchers.IO) {
-            val buylist = database.databaseQueries.getAllChecklists().executeAsOneOrNull()
-            if (buylist == null) {
-                val freshBuylist = Checklist(
-                    id = Id(1),
-                    name = "Buylist",
-                    items = emptyList(),
-                    scn = 0,
-                    lastModified = Clock.System.now()
-                )
-                database.databaseQueries.insertChecklist(
-                    id = freshBuylist.id.id,
-                    name = freshBuylist.name,
-                    itemsJson = "",
-                    scn = freshBuylist.scn,
-                    lastModifiedTimestamp = freshBuylist.lastModified.toDbTime()
-                )
-
-                checklists.value = listOf(freshBuylist)
-            } else {
-                checklists.value = listOf(
-                    Checklist(
-                        id = Id(buylist.id),
-                        name = buylist.name,
-                        items = gson.fromJson(buylist.itemsJson, Array<ChecklistItem>::class.java)
-                            ?.toList().orEmpty(),
-                        scn = buylist.scn,
-                        lastModified = Instant.fromEpochMilliseconds(buylist.lastModifiedTimestamp)
-                    )
+            checklists.value = database.databaseQueries.getAllChecklists().executeAsList().map {
+                Checklist(
+                    id = Id(it.id),
+                    name = it.name,
+                    items = gson.fromJson(it.itemsJson, Array<ChecklistItem>::class.java)
+                        ?.toList().orEmpty(),
+                    scn = it.scn,
+                    lastModified = Instant.fromEpochMilliseconds(it.lastModifiedTimestamp)
                 )
             }
 
