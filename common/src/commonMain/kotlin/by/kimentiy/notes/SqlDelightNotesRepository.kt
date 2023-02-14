@@ -2,7 +2,6 @@ package by.kimentiy.notes
 
 import by.kimentiy.notes.repositories.*
 import by.kimentiy.notes.repositories.DeletedNote
-import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -11,13 +10,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 class SqlDelightNotesRepository(
     driverFactory: SqlDelightDriverFactory,
     scope: CoroutineScope
 ) : NotesRepository {
 
-    private val gson = Gson()
     private val driver = driverFactory.createDriver()
     private val database = Database(driver)
 
@@ -31,8 +32,7 @@ class SqlDelightNotesRepository(
                 Checklist(
                     id = Id(it.id),
                     name = it.name,
-                    items = gson.fromJson(it.itemsJson, Array<ChecklistItem>::class.java)
-                        ?.toList().orEmpty(),
+                    items = Json.decodeFromString(it.itemsJson),
                     scn = it.scn,
                     lastModified = Instant.fromEpochMilliseconds(it.lastModifiedTimestamp)
                 )
@@ -54,8 +54,7 @@ class SqlDelightNotesRepository(
                     title = it.title,
                     description = it.description,
                     isCompleted = it.isCompleted,
-                    subtasks = gson.fromJson(it.subtasksJson, Array<Subtask>::class.java)?.toList()
-                        .orEmpty(),
+                    subtasks = Json.decodeFromString(it.subtasksJson),
                     scn = it.scn,
                     lastModified = it.lastModifiedTimestamp.toDomainTime()
                 )
@@ -72,7 +71,7 @@ class SqlDelightNotesRepository(
             title = newValue.title,
             description = newValue.description,
             isCompleted = newValue.isCompleted,
-            subtasksJson = gson.toJson(newValue.subtasks)
+            subtasksJson = Json.encodeToString(newValue.subtasks)
         )
 
         _inboxTasks.updateValue(newValue)
@@ -98,7 +97,7 @@ class SqlDelightNotesRepository(
             title = title,
             description = description,
             isCompleted = inboxTask.isCompleted,
-            subtasksJson = gson.toJson(subtasks),
+            subtasksJson = Json.encodeToString(subtasks),
             scn = inboxTask.scn,
             lastModifiedTimestamp = inboxTask.lastModified.toDbTime()
         )
@@ -193,7 +192,7 @@ class SqlDelightNotesRepository(
         database.databaseQueries.updateChecklist(
             id = newValue.id.id,
             name = newValue.name,
-            itemsJson = gson.toJson(newValue.items)
+            itemsJson = Json.encodeToString(newValue.items)
         )
 
         checklists.updateValue(newValue)
@@ -212,7 +211,7 @@ class SqlDelightNotesRepository(
             database.databaseQueries.insertChecklist(
                 id = checklist.id.id,
                 name = checklist.name,
-                itemsJson = gson.toJson(checklist.items),
+                itemsJson = Json.encodeToString(checklist.items),
                 scn = checklist.scn,
                 lastModifiedTimestamp = checklist.lastModified.toDbTime()
             )

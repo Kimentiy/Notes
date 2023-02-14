@@ -21,9 +21,6 @@ kotlin {
                 // Needed only for preview.
                 implementation(compose.preview)
 
-                // Json serializer
-                implementation("com.google.code.gson:gson:2.10")
-
                 // Kotlin json serializer
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
 

@@ -2,6 +2,7 @@ package by.kimentiy.notes.repositories
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Instant
+import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmInline
 
 interface NotesRepository {
@@ -57,7 +58,7 @@ interface NotesRepository {
 }
 
 @JvmInline
-@kotlinx.serialization.Serializable
+@Serializable
 value class Id(val id: Long)
 
 interface Notelike {
@@ -75,6 +76,7 @@ data class Checklist(
     override val lastModified: Instant
 ) : Notelike
 
+@Serializable
 data class ChecklistItem(
     val title: String,
     val isChecked: Boolean
@@ -98,6 +100,7 @@ data class InboxTask(
     override val lastModified: Instant
 ) : Notelike
 
+@Serializable
 class Subtask(
     val title: String,
     val description: String,

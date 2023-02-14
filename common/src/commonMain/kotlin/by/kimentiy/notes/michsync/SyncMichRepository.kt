@@ -2,7 +2,6 @@ package by.kimentiy.notes.michsync
 
 import by.kimentiy.notes.network.httpClient
 import by.kimentiy.notes.repositories.*
-import com.google.gson.Gson
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -11,6 +10,10 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -22,7 +25,10 @@ class SyncMichRepository(
 
     private val address = Url("https://mmich.online:3000/fullsync")
     private val client = httpClient()
-    private val gson = Gson()
+    private val jsonSerializer = Json {
+        prettyPrint = true
+        ignoreUnknownKeys = true
+    }
 
     override suspend fun syncNotes(): Result<Unit> = withContext(Dispatchers.IO) {
         val lastSyncTime = settingsRepository.lastSyncTime
@@ -63,7 +69,7 @@ class SyncMichRepository(
             lastSyncTime = lastSyncTime?.format(),
             news = remoteNotes
         )
-        val requestJson = gson.toJson(request)
+        val requestJson = jsonSerializer.encodeToString(request)
         println("Request: $requestJson")
         val serverResponse = client.post {
             contentType(ContentType.Application.Json)
@@ -74,9 +80,10 @@ class SyncMichRepository(
         if (serverResponse.status.isSuccess()) {
             val json = serverResponse.bodyAsText()
 
-            println("Response: $json")
+            print("Response:")
+            printJson(json)
 
-            val response = gson.fromJson(json, MichResponse::class.java)
+            val response = jsonSerializer.decodeFromString<MichResponse>(json)
 
             handleResponse(notes, response)
 
@@ -176,6 +183,10 @@ class SyncMichRepository(
         ).format(dateTimeFormatter)
     }
 
+    private fun printJson(json: String) {
+        println(jsonSerializer.encodeToString(jsonSerializer.parseToJsonElement(json)))
+    }
+
     companion object {
         private val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ")
     }
@@ -185,10 +196,12 @@ class SyncMichRepository(
     }
 }
 
+@Serializable
 data class MichRequest(
     val lastSyncTime: String?, val news: List<RemoteNote>
 )
 
+@Serializable
 data class MichResponse(
     val lastSyncTime: String,
     val news: List<RemoteNote>,
@@ -196,6 +209,7 @@ data class MichResponse(
     val conflicts: List<RemoteNote>
 )
 
+@Serializable
 data class RemoteNote(
     val id: Long? = null,
     val clientId: Long? = null,
@@ -207,6 +221,7 @@ data class RemoteNote(
     val modifiedAt: String?
 )
 
+@Serializable
 data class RemoteConfirm(
     val id: Long,
     val scn: Long,
