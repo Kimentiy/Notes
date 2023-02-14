@@ -19,14 +19,16 @@ VALUES (?, ?, ?, ?, ?);
 
 updateNote:
 UPDATE noteTable
-SET title=?, description=?
+SET title=?, description=?, scn=?, lastModifiedTimestamp=?
+WHERE id=?;
+
+updateNoteIdAndScn:
+UPDATE noteTable
+SET id=?, scn=?
 WHERE id=?;
 
 deleteNote:
 DELETE FROM noteTable WHERE id=?;
-
-getMaxNoteId:
-SELECT MAX(id) FROM noteTable;
 
 CREATE TABLE IF NOT EXISTS checklistTable(
     id INTEGER NOT NULL,
@@ -51,9 +53,6 @@ WHERE id=?;
 
 deleteChecklist:
 DELETE FROM checklistTable WHERE id=?;
-
-getMaxChecklistId:
-SELECT MAX(id) FROM checklistTable;
 
 CREATE TABLE IF NOT EXISTS inboxTaskTable(
     id INTEGER NOT NULL,
@@ -81,5 +80,19 @@ WHERE id=?;
 deleteInboxTask:
 DELETE FROM inboxTaskTable WHERE id=?;
 
-getMaxInboxTaskId:
-SELECT MAX(id) FROM inboxTaskTable;
+CREATE TABLE IF NOT EXISTS deletedNote(
+    id INTEGER NOT NULL,
+    scn INTEGER NOT NULL,
+    lastModifiedTimestamp INTEGER  NOT NULL,
+    PRIMARY KEY (id)
+);
+
+getAllDeletedNotes:
+SELECT * FROM deletedNote;
+
+insertDeletedNote:
+INSERT INTO deletedNote(id, scn, lastModifiedTimestamp)
+VALUES (?, ?, ?);
+
+clearDeletedNotes:
+DELETE FROM deletedNote;

@@ -3,6 +3,7 @@ import org.jetbrains.compose.compose
 plugins {
     id("com.android.library")
     kotlin("multiplatform")
+    kotlin("plugin.serialization") version "1.8.10"
     id("org.jetbrains.compose")
     id("app.cash.sqldelight") version "2.0.0-alpha05"
 }
@@ -20,7 +21,11 @@ kotlin {
                 // Needed only for preview.
                 implementation(compose.preview)
 
+                // Json serializer
                 implementation("com.google.code.gson:gson:2.10")
+
+                // Kotlin json serializer
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
 
                 implementation("app.cash.sqldelight:primitive-adapters:2.0.0-alpha05")
 
@@ -33,6 +38,9 @@ kotlin {
 
                 // datetime
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
+
+                // key-value storage
+                implementation("com.russhwolf:multiplatform-settings-no-arg:1.0.0")
             }
         }
         named("androidMain") {

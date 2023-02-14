@@ -6,7 +6,8 @@ import by.kimentiy.notes.models.ChecklistsViewModel
 import by.kimentiy.notes.models.InboxViewModel
 import by.kimentiy.notes.models.NotesViewModel
 import by.kimentiy.notes.navigationGraph
-import by.kimentiy.notes.repositories.SyncMichRepository
+import by.kimentiy.notes.michsync.SyncMichRepository
+import by.kimentiy.notes.multiplatformsettings.MultiplatformSettingsRepository
 import kotlinx.coroutines.GlobalScope
 import ru.alexgladkov.odyssey.compose.setup.OdysseyConfiguration
 import ru.alexgladkov.odyssey.compose.setup.setNavigationContent
@@ -16,11 +17,15 @@ fun main() = application {
         driverFactory = SqlDelightDriverFactory(),
         scope = GlobalScope
     )
+    val settingsRepository = MultiplatformSettingsRepository()
 
     val inboxViewModel = InboxViewModel(GlobalScope, notesRepository)
     val checklistsViewModel = ChecklistsViewModel(GlobalScope, notesRepository)
     val notesViewModel = NotesViewModel(GlobalScope, notesRepository)
-    val syncRepository = SyncMichRepository()
+    val syncRepository = SyncMichRepository(
+        settingsRepository = settingsRepository,
+        notesRepository = notesRepository
+    )
 
     Window(onCloseRequest = ::exitApplication) {
         setNavigationContent(OdysseyConfiguration(), onApplicationFinish = {
@@ -31,6 +36,7 @@ fun main() = application {
                 checklistsViewModel = checklistsViewModel,
                 notesViewModel = notesViewModel,
                 repository = notesRepository,
+                settingsRepository = settingsRepository,
                 syncRepository = syncRepository
             )
         }

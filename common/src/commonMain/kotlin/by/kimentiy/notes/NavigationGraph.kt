@@ -1,5 +1,9 @@
 package by.kimentiy.notes
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import by.kimentiy.notes.models.*
@@ -8,6 +12,10 @@ import by.kimentiy.notes.ui.*
 import by.kimentiy.notes.ui.main.MainScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.BlendMode.Companion.Color
+import androidx.compose.ui.graphics.Color
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import ru.alexgladkov.odyssey.compose.extensions.present
 import ru.alexgladkov.odyssey.compose.extensions.push
@@ -15,6 +23,7 @@ import ru.alexgladkov.odyssey.compose.extensions.screen
 import ru.alexgladkov.odyssey.compose.local.LocalRootController
 import ru.alexgladkov.odyssey.compose.navigation.RootComposeBuilder
 import ru.alexgladkov.odyssey.compose.navigation.modal_navigation.AlertConfiguration
+import ru.alexgladkov.odyssey.compose.navigation.modal_navigation.CustomModalConfiguration
 
 
 fun RootComposeBuilder.navigationGraph(
@@ -22,6 +31,7 @@ fun RootComposeBuilder.navigationGraph(
     checklistsViewModel: ChecklistsViewModel,
     notesViewModel: NotesViewModel,
     repository: NotesRepository,
+    settingsRepository: SettingsRepository,
     syncRepository: SyncRepository
 ) {
     screen(Screens.Main.name) {
@@ -34,11 +44,20 @@ fun RootComposeBuilder.navigationGraph(
             notesViewModel = notesViewModel,
             repository = repository,
             onRefreshClicked = {
-                GlobalScope.launch {
-                    val result = syncRepository.syncNotes()
-
-                    notesViewModel.forceNotesFromServer(result)
+                modalController.present(CustomModalConfiguration()) { key ->
+                    Box(
+                        modifier = Modifier.fillMaxSize()
+                            .background(Color(0x7F000000))
+                            .clickable { /* do nothing */ }
+                    )
+                    GlobalScope.launch {
+                        val result = syncRepository.syncNotes()
+                        modalController.popBackStack(key, animate = false)
+                    }
                 }
+            },
+            onSettingsClicked = {
+                settingsRepository.lastSyncTime = null
             },
             onInboxClicked = {
                 rootController.push(Screens.Inbox.name)

@@ -2,5 +2,5 @@ package by.kimentiy.notes.repositories
 
 interface SyncRepository {
 
-    suspend fun syncNotes(): List<Note>
+    suspend fun syncNotes(): Result<Unit>
 }

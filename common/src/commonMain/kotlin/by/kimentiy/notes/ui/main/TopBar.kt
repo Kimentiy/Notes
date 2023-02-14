@@ -14,7 +14,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun NotesTopBar(onRefreshClicked: () -> Unit) {
+fun NotesTopBar(
+    onRefreshClicked: () -> Unit,
+    onSettingsClicked: () -> Unit
+) {
     TopAppBar(
         title = { Text("Notes") },
         actions = {
@@ -26,11 +29,13 @@ fun NotesTopBar(onRefreshClicked: () -> Unit) {
                     modifier = iconPadding
                 )
             }
-            Icon(
-                Icons.Default.Settings,
-                contentDescription = "Settings",
-                modifier = iconPadding
-            )
+            IconButton(onSettingsClicked) {
+                Icon(
+                    Icons.Default.Settings,
+                    contentDescription = "Settings",
+                    modifier = iconPadding
+                )
+            }
         }
     )
 }

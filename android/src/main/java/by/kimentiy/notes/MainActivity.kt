@@ -16,6 +16,7 @@ class MainActivity : ComponentActivity() {
 
         val repository = (application as NotesApp).repository
         val syncRepository = (application as NotesApp).syncRepository
+        val settingsRepository = (application as NotesApp).settingsRepository
         val viewModelFactory = NotesViewModelFactory(repository)
 
         setContent {
@@ -32,6 +33,7 @@ class MainActivity : ComponentActivity() {
                     checklistsViewModel = checklistsViewModel,
                     notesViewModel = notesViewModel,
                     repository = repository,
+                    settingsRepository = settingsRepository,
                     syncRepository = syncRepository
                 )
             }

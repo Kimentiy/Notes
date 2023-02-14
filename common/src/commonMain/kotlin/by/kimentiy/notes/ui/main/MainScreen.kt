@@ -27,6 +27,7 @@ fun MainScreen(
     notesViewModel: NotesViewModel,
     repository: NotesRepository,
     onRefreshClicked: () -> Unit,
+    onSettingsClicked: () -> Unit,
     onInboxClicked: (InboxViewModel) -> Unit,
     onChecklistClicked: (ChecklistViewModel) -> Unit,
     onSearchClicked: () -> Unit,
@@ -50,7 +51,8 @@ fun MainScreen(
                 )
             } else {
                 NotesTopBar(
-                    onRefreshClicked = onRefreshClicked
+                    onRefreshClicked = onRefreshClicked,
+                    onSettingsClicked = onSettingsClicked
                 )
             }
         },

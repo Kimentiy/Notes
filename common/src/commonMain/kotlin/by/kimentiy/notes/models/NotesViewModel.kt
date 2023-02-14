@@ -31,11 +31,6 @@ class NotesViewModel(
     fun getNoteById(id: Id): NoteViewModel {
         return notes.value.find { it.id == id } ?: NoteViewModel(null, scope, repository)
     }
-
-    // TODO for tests only
-    fun forceNotesFromServer(notes: List<Note>) {
-        _notes.value = notes.map { NoteViewModel(it, scope, repository) }
-    }
 }
 
 class NoteViewModel(
@@ -66,10 +61,10 @@ class NoteViewModel(
         scope.launch {
             if (currentNote != null) {
                 repository.updateNote(
-                    currentNote.copy(
-                        title = title.value,
-                        description = description.value
-                    )
+                    id = currentNote.id,
+                    title = title.value,
+                    description = description.value,
+                    scn = currentNote.scn
                 )
             } else if (title.value.isNotBlank() || description.value.isNotBlank()) {
                 repository.createNote(

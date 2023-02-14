@@ -1,6 +1,7 @@
 package by.kimentiy.notes
 
 import by.kimentiy.notes.repositories.*
+import by.kimentiy.notes.repositories.DeletedNote
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -83,7 +84,7 @@ class SqlDelightNotesRepository(
         subtasks: List<Subtask>
     ): InboxTask = withContext(Dispatchers.IO) {
         val inboxTask = InboxTask(
-            id = Id(getNewGlobalId()),
+            id = getNewId(),
             title = title,
             description = description,
             isCompleted = false,
@@ -111,14 +112,20 @@ class SqlDelightNotesRepository(
         return notes
     }
 
-    override suspend fun createNote(title: String, description: String): Note =
+    override suspend fun createNote(
+        id: Long?,
+        title: String,
+        description: String,
+        scn: Long,
+        lastModified: Instant?
+    ): Note =
         withContext(Dispatchers.IO) {
             val note = Note(
-                id = Id(getNewGlobalId()),
+                id = id?.let { Id(it) } ?: getNewId(),
                 title = title,
                 description = description,
-                scn = 0,
-                lastModified = Clock.System.now()
+                scn = scn,
+                lastModified = lastModified ?: Clock.System.now()
             )
             database.databaseQueries.insertNote(
                 id = note.id.id,
@@ -133,14 +140,49 @@ class SqlDelightNotesRepository(
             note
         }
 
-    override suspend fun updateNote(newValue: Note) = withContext(Dispatchers.IO) {
-        database.databaseQueries.updateNote(
-            id = newValue.id.id,
-            title = newValue.title,
-            description = newValue.description
+    override suspend fun updateNote(
+        id: Id,
+        title: String,
+        description: String,
+        scn: Long,
+        lastModified: Instant?
+    ) = withContext(Dispatchers.IO) {
+        val newNote = Note(
+            id = id,
+            title = title,
+            description = description,
+            scn = scn,
+            lastModified = lastModified ?: Clock.System.now()
         )
 
-        notes.updateValue(newValue)
+        database.databaseQueries.updateNote(
+            id = newNote.id.id,
+            title = newNote.title,
+            description = newNote.description,
+            scn = newNote.scn,
+            lastModifiedTimestamp = newNote.lastModified.toDbTime()
+        )
+
+        notes.updateValue(newNote)
+    }
+
+    override suspend fun updateNote(id: Long, newId: Long?, scn: Long) {
+        database.databaseQueries.updateNoteIdAndScn(
+            id = id,
+            scn = scn,
+            id_ = newId ?: id
+        )
+
+        notes.value = notes.value.map {
+            if (it.id.id == id) {
+                it.copy(
+                    id = Id(newId ?: id),
+                    scn = scn
+                )
+            } else {
+                it
+            }
+        }
     }
 
     override fun getChecklists(): Flow<List<Checklist>> {
@@ -160,7 +202,7 @@ class SqlDelightNotesRepository(
     override suspend fun createChecklist(name: String, items: List<ChecklistItem>): Checklist =
         withContext(Dispatchers.IO) {
             val checklist = Checklist(
-                id = Id(getNewGlobalId()),
+                id = getNewId(),
                 name = name,
                 items = items,
                 scn = 0,
@@ -181,35 +223,66 @@ class SqlDelightNotesRepository(
         }
 
     override suspend fun deleteById(id: Id) = withContext(Dispatchers.IO) {
-        database.databaseQueries.deleteNote(id.id)
-        database.databaseQueries.deleteChecklist(id.id)
-        database.databaseQueries.deleteInboxTask(id.id)
+        val note = notes.value.find { it.id == id }
+        val checklist = checklists.value.find { it.id == id }
+        val inboxTask = checklists.value.find { it.id == id }
 
-        notes.removeValue(id)
-        checklists.removeValue(id)
-        _inboxTasks.removeValue(id)
+        if (note != null) {
+            database.databaseQueries.deleteNote(id.id)
+            insertDeletedNote(note)
+
+            notes.removeValue(id)
+        } else if (checklist != null) {
+            database.databaseQueries.deleteChecklist(id.id)
+            insertDeletedNote(checklist)
+
+            checklists.removeValue(id)
+        } else if (inboxTask != null) {
+            database.databaseQueries.deleteInboxTask(id.id)
+            insertDeletedNote(inboxTask)
+
+            _inboxTasks.removeValue(id)
+        }
     }
 
-    private fun getNewGlobalId(): Long {
-        return maxOf(
-            database.databaseQueries.getMaxNoteId().executeAsOne().MAX ?: 0,
-            database.databaseQueries.getMaxInboxTaskId().executeAsOne().MAX ?: 0,
-            database.databaseQueries.getMaxChecklistId().executeAsOne().MAX ?: 0
-        ) + 1
+    override suspend fun getAllDeletedNotes(): List<DeletedNote> = withContext(Dispatchers.IO) {
+        database.databaseQueries.getAllDeletedNotes().executeAsList().map {
+            DeletedNote(
+                id = Id(it.id),
+                scn = it.scn,
+                lastModified = it.lastModifiedTimestamp.toDomainTime()
+            )
+        }
     }
 
-    private fun <T : WithGlobalId> MutableStateFlow<List<T>>.addValue(item: T) {
+    override suspend fun clearDeletedNotes() = withContext(Dispatchers.IO) {
+        database.databaseQueries.clearDeletedNotes()
+    }
+
+    private fun getNewId(): Id {
+        return Id(Clock.System.now().toEpochMilliseconds())
+    }
+
+    private fun <T : Notelike> MutableStateFlow<List<T>>.addValue(item: T) {
         value = value + listOf(item)
     }
 
-    private fun <T : WithGlobalId> MutableStateFlow<List<T>>.updateValue(newValue: T) {
+    private fun <T : Notelike> MutableStateFlow<List<T>>.updateValue(newValue: T) {
         value = value.map { element ->
             newValue.takeIf { it.id == element.id } ?: element
         }
     }
 
-    private fun <T : WithGlobalId> MutableStateFlow<List<T>>.removeValue(id: Id) {
+    private fun <T : Notelike> MutableStateFlow<List<T>>.removeValue(id: Id) {
         value = value.filterNot { it.id == id }
+    }
+
+    private fun <T : Notelike> insertDeletedNote(value: T) {
+        database.databaseQueries.insertDeletedNote(
+            id = value.id.id,
+            scn = value.scn,
+            lastModifiedTimestamp = value.lastModified.toDbTime()
+        )
     }
 
     private fun Instant.toDbTime(): Long {

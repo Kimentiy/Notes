@@ -16,12 +16,6 @@ class NotesContentProvider : ContentProvider() {
     private lateinit var repository: NotesRepository
 
     override fun onCreate(): Boolean {
-        // TODO make repository global singleton
-        val database = Room.databaseBuilder(
-            context!!,
-            NotesDatabase::class.java,
-            "notes-database"
-        ).build()
         repository = SqlDelightNotesRepository(
             driverFactory = SqlDelightDriverFactory(context!!),
             scope = GlobalScope
@@ -44,17 +38,18 @@ class NotesContentProvider : ContentProvider() {
     }
 
     override fun insert(uri: Uri, values: ContentValues?): Uri? {
-        Log.d("MyTag", "Thread: ${Thread.currentThread()}")
-        Thread.sleep(3000)
-        return runBlocking {
-            values?.let {
-                val note = repository.createNote(
-                    title = values.getAsString("title"),
-                    description = values.getAsString("description")
-                )
-                Uri.withAppendedPath(uri, note.id.id.toString())
-            }
-        }
+//        Log.d("MyTag", "Thread: ${Thread.currentThread()}")
+//        Thread.sleep(3000)
+//        return runBlocking {
+//            values?.let {
+//                val note = repository.createNote(
+//                    title = values.getAsString("title"),
+//                    description = values.getAsString("description")
+//                )
+//                Uri.withAppendedPath(uri, note.id.id.toString())
+//            }
+//        }
+        return null
     }
 
     override fun delete(uri: Uri, selection: String?, selectionArgs: Array<out String>?): Int {
