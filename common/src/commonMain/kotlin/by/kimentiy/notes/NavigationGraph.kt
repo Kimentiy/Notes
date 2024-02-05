@@ -15,6 +15,7 @@ import kotlinx.coroutines.GlobalScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.BlendMode.Companion.Color
 import androidx.compose.ui.graphics.Color
+import by.kimentiy.notes.multiplatformsettings.MultiplatformSettingsRepository
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import ru.alexgladkov.odyssey.compose.extensions.present
@@ -43,6 +44,7 @@ fun RootComposeBuilder.navigationGraph(
             checklistsViewModel = checklistsViewModel,
             notesViewModel = notesViewModel,
             repository = repository,
+            settingsRepository = settingsRepository,
             onRefreshClicked = {
                 modalController.present(CustomModalConfiguration()) { key ->
                     Box(
@@ -57,7 +59,7 @@ fun RootComposeBuilder.navigationGraph(
                 }
             },
             onSettingsClicked = {
-                settingsRepository.lastSyncTime = null
+                (settingsRepository as MultiplatformSettingsRepository).cleanAllData()
             },
             onInboxClicked = {
                 rootController.push(Screens.Inbox.name)
@@ -70,6 +72,9 @@ fun RootComposeBuilder.navigationGraph(
             },
             navigateToEditScreen = {
                 rootController.push(Screens.EditNote(it).name, it)
+            },
+            navigateToResolveConflict = {
+
             },
             navigateToAddPurchaseScreen = {
                 val buylist = checklistsViewModel.getChecklistById(Id(1))

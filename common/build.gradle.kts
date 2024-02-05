@@ -1,4 +1,4 @@
-import org.jetbrains.compose.compose
+import kotlin.io.*
 
 plugins {
     id("com.android.library")
@@ -18,6 +18,7 @@ kotlin {
                 api(compose.runtime)
                 api(compose.foundation)
                 api(compose.material)
+                api(compose.materialIconsExtended)
                 // Needed only for preview.
                 implementation(compose.preview)
 
@@ -86,4 +87,8 @@ sqldelight {
             packageName.set("by.kimentiy.notes")
         }
     }
+}
+
+tasks.create("cleanDb") {
+    delete("${project.rootDir}/desktop/database")
 }

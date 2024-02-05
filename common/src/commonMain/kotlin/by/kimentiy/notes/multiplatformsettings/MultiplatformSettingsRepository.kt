@@ -43,6 +43,11 @@ class MultiplatformSettingsRepository : SettingsRepository {
         }
     }
 
+    // For tests only
+    fun cleanAllData() {
+        settings.clear()
+    }
+
     companion object {
         private const val KEY_LAST_SYNC_TIME = "KEY_LAST_SYNC_TIME"
         private const val KEY_CONFLICT_NOTES = "KEY_CONFLICT_NOTES"

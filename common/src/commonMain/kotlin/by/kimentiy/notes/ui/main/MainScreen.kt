@@ -16,8 +16,7 @@ import by.kimentiy.notes.models.ChecklistViewModel
 import by.kimentiy.notes.models.ChecklistsViewModel
 import by.kimentiy.notes.models.InboxViewModel
 import by.kimentiy.notes.models.NotesViewModel
-import by.kimentiy.notes.repositories.Id
-import by.kimentiy.notes.repositories.NotesRepository
+import by.kimentiy.notes.repositories.*
 import kotlinx.coroutines.launch
 
 @Composable
@@ -26,16 +25,19 @@ fun MainScreen(
     checklistsViewModel: ChecklistsViewModel,
     notesViewModel: NotesViewModel,
     repository: NotesRepository,
+    settingsRepository: SettingsRepository,
     onRefreshClicked: () -> Unit,
     onSettingsClicked: () -> Unit,
     onInboxClicked: (InboxViewModel) -> Unit,
     onChecklistClicked: (ChecklistViewModel) -> Unit,
     onSearchClicked: () -> Unit,
     navigateToEditScreen: (Id?) -> Unit,
+    navigateToResolveConflict: (ConflictNote) -> Unit,
     navigateToAddPurchaseScreen: () -> Unit,
     onAddInboxClicked: () -> Unit
 ) {
     val selectedNotes = remember { mutableStateOf(emptyList<Id>()) }
+    val conflictNotes = remember { mutableStateOf(settingsRepository.getAllConflicts()) }
     val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
@@ -86,11 +88,15 @@ fun MainScreen(
             inboxViewModel = inboxViewModel,
             checklistsViewModel = checklistsViewModel,
             notesViewModel = notesViewModel,
+            conflictNotes = conflictNotes,
             selectedNotes = selectedNotes,
             onInboxClicked = onInboxClicked,
             onChecklistClicked = onChecklistClicked,
             onNoteClicked = { id ->
                 navigateToEditScreen(id)
+            },
+            onConflictNoteClick = { conflictNote ->
+                navigateToResolveConflict(conflictNote)
             })
     }
 }
@@ -101,10 +107,12 @@ fun NotesGrid(
     inboxViewModel: InboxViewModel,
     checklistsViewModel: ChecklistsViewModel,
     notesViewModel: NotesViewModel,
+    conflictNotes: MutableState<List<ConflictNote>>,
     selectedNotes: MutableState<List<Id>>,
     onInboxClicked: (InboxViewModel) -> Unit,
     onChecklistClicked: (ChecklistViewModel) -> Unit,
-    onNoteClicked: (Id) -> Unit
+    onNoteClicked: (Id) -> Unit,
+    onConflictNoteClick: (ConflictNote) -> Unit
 ) {
     val notes = notesViewModel.notes.collectAsState().value
     val checklists = checklistsViewModel.checklists.collectAsState().value
@@ -184,6 +192,23 @@ fun NotesGrid(
                 },
                 onLongClick = {
                     selectedNotes.value = selectedNotes.value + listOfNotNull(note.id)
+                }
+            )
+        }
+
+        items(items = conflictNotes.value) { conflictNote ->
+            Note(
+                title = (conflictNote.localVersion as? NoteVersion.Version)?.title.orEmpty(),
+                content = (conflictNote.localVersion as? NoteVersion.Version)?.description.orEmpty(),
+                isSelected = false,
+                isConflict = true,
+                onClick = {
+                    if (selectedNotes.value.isEmpty()) {
+                        onConflictNoteClick(conflictNote)
+                    }
+                },
+                onLongClick = {
+                    // do nothing
                 }
             )
         }
